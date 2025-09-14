@@ -98,8 +98,5 @@ coverage/
 .env.*.local
 .cursor/
 .cursor\rules
-demo/demo.zip
-demo/
-demo
 demo/demo.mp4
 demo/demo.zip
