@@ -1,0 +1,199 @@
+[
+    {
+      "id": "stage-1-phish",
+      "title": "The Phishy Email",
+      "short": "Identify a phishing email and choose a safe action.",
+      "story": "Lily the baker got an urgent email from 'CyberBank' asking to reset a password. Look closely — something doesn't add up.",
+      "tasks": [
+        {
+          "id": "1.1-inspect-email",
+          "type": "mail-inspect",
+          "prompt": "Open the Mail app and inspect the suspicious message. Click 'View headers' and hover the link to reveal the real target URL. Select at least two suspicious items.",
+          "uiHints": ["Click 'View headers'", "Hover the link to see the destination", "Look for misspellings and odd sender domains"],
+          "simulatedTerminal": null,
+          "flag": "FLAG{phish_sender_link}",
+          "successMsg": "Correct — that email is a phishing attempt. Never type passwords into a link you received by mail.",
+          "failureMsg": "Not quite. Try inspecting the headers and the link destination again.",
+          "reward": { "xp": 50, "badge": null }
+        },
+        {
+          "id": "1.2-safe-action",
+          "type": "choice",
+          "prompt": "What should Lily do now?",
+          "choices": [
+            { "id": "A", "text": "Click the link immediately" },
+            { "id": "B", "text": "Delete and report the email" },
+            { "id": "C", "text": "Reply with personal info" },
+            { "id": "D", "text": "Forward it to friends" }
+          ],
+          "correct": ["B"],
+          "simulatedTerminal": null,
+          "flag": "FLAG{phish_deleted_reported}",
+          "successMsg": "Nice! Deleting and reporting protects Lily and others. If in doubt, contact the organization through official channels.",
+          "failureMsg": "That action is unsafe. Don’t share personal info or click suspicious links.",
+          "reward": { "xp": 40, "badge": "Scam Spotter" }
+        }
+      ]
+    },
+  
+    {
+      "id": "stage-2-gobuster",
+      "title": "Finding the Hidden Admin Door",
+      "short": "Scan the bakery website for hidden pages and secure the admin area.",
+      "story": "SweetBytes Bakery may have hidden admin pages. Use the web scan tool to find any unlinked admin panels.",
+      "tasks": [
+        {
+          "id": "2.1-run-scan",
+          "type": "web-scan",
+          "prompt": "Run the Web Scan to enumerate common directories (simulated Gobuster). Look for folders like /admin, /backup, or /uploads.",
+          "uiHints": ["Press 'Run Web Scan' or type `gobuster dir` in terminal (simulated)"],
+          "simulatedTerminal": "gobuster dir -u http://sweetbytes.local -w /wordlists/common.txt",
+          "flag": "FLAG{found_admin}",
+          "successMsg": "Scan result: /admin returned status 200 — a hidden admin page was found.",
+          "failureMsg": "No interesting directories found. Try a different wordlist or scan again.",
+          "reward": { "xp": 60, "badge": null }
+        },
+        {
+          "id": "2.2-protect-admin",
+          "type": "choice",
+          "prompt": "Choose two protections to secure the admin page (pick 2):",
+          "choices": [
+            { "id": "A", "text": "Leave it as-is" },
+            { "id": "B", "text": "Enable strong password + 2FA" },
+            { "id": "C", "text": "Restrict access to only specific IPs" },
+            { "id": "D", "text": "Post the admin URL publicly" }
+          ],
+          "correct": ["B", "C"],
+          "simulatedTerminal": null,
+          "flag": "FLAG{admin_protected}",
+          "successMsg": "Good choices — admin pages should require strong auth and IP restrictions where possible.",
+          "failureMsg": "Those choices won’t secure it. Avoid exposing admin URLs publicly.",
+          "reward": { "xp": 45, "badge": null }
+        }
+      ]
+    },
+  
+    {
+      "id": "stage-3-hydra",
+      "title": "Cracking the Weak Password",
+      "short": "Demonstrate why weak passwords fail and enable stronger authentication.",
+      "story": "The admin login uses a weak password. Try common passwords (simulated) to see why this is dangerous, then fix it.",
+      "tasks": [
+        {
+          "id": "3.1-try-passwords",
+          "type": "login-try",
+          "prompt": "Try common or default passwords (simulated) to see if the admin login can be guessed.",
+          "uiHints": ["Click 'Try Common Passwords' or type `hydra` in the terminal (simulated)"],
+          "simulatedTerminal": "hydra -l admin -P /wordlists/passwords.txt http-post-form '/admin:username=^USER^&password=^PASS^:F=incorrect'",
+          "flag": "FLAG{weak_password_cracked}",
+          "successMsg": "The password 'sweetbaker123' was guessed — too weak!",
+          "failureMsg": "Looks like your guesses didn't succeed. But remember: weak passwords are always a risk.",
+          "reward": { "xp": 70, "badge": null }
+        },
+        {
+          "id": "3.2-strengthen-account",
+          "type": "action",
+          "prompt": "Set a new secure password and enable 2FA for the admin account using the Password Generator and 2FA toggle.",
+          "uiHints": ["Use the 'Generate Strong Password' button", "Enable 2FA toggle"],
+          "simulatedTerminal": null,
+          "flag": "FLAG{password_reset_2fa}",
+          "successMsg": "Excellent. Strong passwords + 2FA greatly reduce the risk of brute-force attacks.",
+          "failureMsg": "Please set a long unique password and enable 2FA before continuing.",
+          "reward": { "xp": 80, "badge": "Lockdown Master" }
+        }
+      ]
+    },
+  
+    {
+      "id": "stage-4-nmap",
+      "title": "Scanning the Network",
+      "short": "Map the office network and secure exposed services.",
+      "story": "Port Pirate might find an open service on Lily's network. Scan the local subnet to discover exposed devices.",
+      "tasks": [
+        {
+          "id": "4.1-scan-network",
+          "type": "network-scan",
+          "prompt": "Run the Network Scan to discover devices and open ports on the office network.",
+          "uiHints": ["Click 'Scan Network' or run `nmap` in terminal (simulated)"],
+          "simulatedTerminal": "nmap -sS 192.168.1.0/24",
+          "flag": "FLAG{nmap_found_nas}",
+          "successMsg": "Scan complete: backup NAS found at 192.168.1.45 with ports 22 and 80 open.",
+          "failureMsg": "No devices found. Make sure your scan target is correct.",
+          "reward": { "xp": 60, "badge": null }
+        },
+        {
+          "id": "4.2-secure-service",
+          "type": "choice",
+          "prompt": "Choose two actions to secure the exposed NAS service (pick 2):",
+          "choices": [
+            { "id": "A", "text": "Update firmware and change default password" },
+            { "id": "B", "text": "Leave credentials as default" },
+            { "id": "C", "text": "Close the port with a firewall rule" },
+            { "id": "D", "text": "Expose the service to the internet for convenience" }
+          ],
+          "correct": ["A", "C"],
+          "simulatedTerminal": null,
+          "flag": "FLAG{nas_secured}",
+          "successMsg": "Good. Updating firmware, changing defaults, and using firewall rules reduce exposure.",
+          "failureMsg": "Those choices won't help secure it. Never leave devices at default settings.",
+          "reward": { "xp": 50, "badge": null }
+        }
+      ]
+    },
+  
+    {
+      "id": "stage-5-review",
+      "title": "Final Review & Community Checklist",
+      "short": "Create a simple 5-item security checklist and pass a short quiz.",
+      "story": "It's time to teach the neighborhood. Assemble a practical security checklist and take a quick quiz.",
+      "tasks": [
+        {
+          "id": "5.1-checklist",
+          "type": "checklist",
+          "prompt": "Choose 5 items to create a bakery security checklist:",
+          "choices": [
+            { "id": "1", "text": "Use strong, unique passwords" },
+            { "id": "2", "text": "Click unknown links immediately" },
+            { "id": "3", "text": "Enable two-factor authentication (2FA)" },
+            { "id": "4", "text": "Update software and firmware regularly" },
+            { "id": "5", "text": "Share passwords with staff via chat" },
+            { "id": "6", "text": "Backup data regularly" },
+            { "id": "7", "text": "Use a VPN on public Wi-Fi" }
+          ],
+          "correct": ["1", "3", "4", "6", "7"],
+          "simulatedTerminal": null,
+          "flag": "FLAG{checklist_complete}",
+          "successMsg": "Great checklist! This will help protect Lily's shop and customers.",
+          "failureMsg": "Pick practical safety measures. Avoid actions that encourage risky behavior.",
+          "reward": { "xp": 90, "badge": "Community Protector" }
+        },
+        {
+          "id": "5.2-quiz",
+          "type": "quiz",
+          "prompt": "Quick 3-question quiz about things you learned.",
+          "questions": [
+            {
+              "q": "What should you do if an email asks for your password?",
+              "options": ["Click the link", "Verify via official site or contact organisation", "Reply with your password"],
+              "correct": 1
+            },
+            {
+              "q": "Why change default device passwords?",
+              "options": ["They look nicer", "Attackers often know defaults", "It makes devices faster"],
+              "correct": 1
+            },
+            {
+              "q": "What is an open port?",
+              "options": ["A service listening on the network", "A broken USB port", "A type of password"],
+              "correct": 0
+            }
+          ],
+          "flag": "FLAG{quiz_passed}",
+          "successMsg": "You scored well — you're ready to teach others!",
+          "failureMsg": "Review the mission tips and try again to improve your score.",
+          "reward": { "xp": 100, "badge": "Instructor Level 1" }
+        }
+      ]
+    }
+  ]
+  
